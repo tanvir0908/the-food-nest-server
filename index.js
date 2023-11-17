@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+var jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -25,6 +26,15 @@ async function run() {
     const reviewCollection = client.db("the-food-nest").collection("reviews");
     const cartCollection = client.db("the-food-nest").collection("carts");
     const usersCollection = client.db("the-food-nest").collection("users");
+
+    // jwt related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res.send({ token });
+    });
 
     // users collection
     // get all users information for admin panel
