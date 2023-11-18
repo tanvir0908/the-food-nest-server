@@ -126,6 +126,12 @@ async function run() {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
+    // post new menu
+    app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
+      const newMenu = req.body;
+      const result = await menuCollection.insertOne(newMenu);
+      res.send(result);
+    });
 
     // review collection
     // get all reviews
