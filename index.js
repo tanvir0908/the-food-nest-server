@@ -126,21 +126,41 @@ async function run() {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
+    // get single menu information using id
+    app.get("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.findOne(query);
+      res.send(result);
+    });
     // post new menu
     app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
       const newMenu = req.body;
       const result = await menuCollection.insertOne(newMenu);
       res.send(result);
     });
+    // update a menu from admin panel
+    app.patch("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const item = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          image: item.image,
+          recipe: item.recipe,
+        },
+      };
+      const result = await menuCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
     // delete a menu
     app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
-      let query = { _id: id };
-      let result = await menuCollection.deleteOne(query);
-      if (result.deletedCount == 0) {
-        query = { _id: new ObjectId(id) };
-        result = await menuCollection.deleteOne(query);
-      }
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(query);
       res.send(result);
     });
 
