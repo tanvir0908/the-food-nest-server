@@ -132,6 +132,17 @@ async function run() {
       const result = await menuCollection.insertOne(newMenu);
       res.send(result);
     });
+    // delete a menu
+    app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      let query = { _id: id };
+      let result = await menuCollection.deleteOne(query);
+      if (result.deletedCount == 0) {
+        query = { _id: new ObjectId(id) };
+        result = await menuCollection.deleteOne(query);
+      }
+      res.send(result);
+    });
 
     // review collection
     // get all reviews
