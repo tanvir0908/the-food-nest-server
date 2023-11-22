@@ -28,6 +28,7 @@ async function run() {
     const reviewCollection = client.db("the-food-nest").collection("reviews");
     const cartCollection = client.db("the-food-nest").collection("carts");
     const usersCollection = client.db("the-food-nest").collection("users");
+    const paymentCollection = client.db("the-food-nest").collection("payments");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -209,6 +210,33 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+    // get users payment history by using email
+    app.get("/payments/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+    // store payment information into database
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      console.log(payment);
+
+      const paymentResult = await paymentCollection.insertOne(payment);
+
+      // delete cart information from cart collection
+      const query = {
+        _id: {
+          $in: payment.cartIds.map((id) => new ObjectId(id)),
+        },
+      };
+      const deleteResult = await cartCollection.deleteMany(query);
+
+      res.send({ paymentResult, deleteResult });
     });
 
     console.log(
