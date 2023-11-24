@@ -224,7 +224,6 @@ async function run() {
     // store payment information into database
     app.post("/payments", async (req, res) => {
       const payment = req.body;
-      console.log(payment);
 
       const paymentResult = await paymentCollection.insertOne(payment);
 
@@ -237,6 +236,38 @@ async function run() {
       const deleteResult = await cartCollection.deleteMany(query);
 
       res.send({ paymentResult, deleteResult });
+    });
+
+    // stats or analytics
+    app.get("/admin-stats", async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const menuItems = await menuCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+      // calculate total revenue -> bangla system
+      // const payments = await paymentCollection.find.toArray();
+      // const revenue = payments.reduce((total, payment) => total + payment, 0);
+
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$price",
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+      res.send({
+        users,
+        menuItems,
+        orders,
+        revenue,
+      });
     });
 
     console.log(
