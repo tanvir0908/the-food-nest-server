@@ -239,7 +239,7 @@ async function run() {
     });
 
     // stats or analytics
-    app.get("/admin-stats", async (req, res) => {
+    app.get("/admin-stats", verifyToken, verifyToken, async (req, res) => {
       const users = await usersCollection.estimatedDocumentCount();
       const menuItems = await menuCollection.estimatedDocumentCount();
       const orders = await paymentCollection.estimatedDocumentCount();
@@ -269,10 +269,6 @@ async function run() {
         revenue,
       });
     });
-
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
   }
 }
